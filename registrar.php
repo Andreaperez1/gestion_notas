@@ -29,6 +29,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $correo = $_POST['correo'];
     $password = password_hash($_POST['password'], PASSWORD_BCRYPT); // Hash de la contraseña
 
+    // Manejar la carga de la imagen
+    $ruta_imagen = '';
+    if (isset($_FILES['foto']) && $_FILES['foto']['error'] == UPLOAD_ERR_OK) {
+        $directorio_subida = 'uploads/'; // Asegúrate de que este directorio exista y tenga permisos adecuados
+        $nombre_archivo = basename($_FILES['foto']['name']);
+        $ruta_imagen = $directorio_subida . uniqid() . '_' . $nombre_archivo; // Evitar colisiones de nombres
+
+        // Mover el archivo subido
+        if (!move_uploaded_file($_FILES['foto']['tmp_name'], $ruta_imagen)) {
+            $error = "Error al subir la imagen.";
+        }
+    }
+
     // Verificar si el correo ya está registrado
     $sql = "SELECT * FROM Profesores WHERE correo='$correo'";
     $result = $conn->query($sql);
@@ -37,8 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error = "El correo ya está registrado.";
     } else {
         // Insertar el nuevo profesor en la base de datos
-        $sql = "INSERT INTO Profesores (primer_nombre, segundo_nombre, primer_apellido, segundo_apellido, cedula, correo, password) 
-                VALUES ('$primer_nombre', '$segundo_nombre', '$primer_apellido', '$segundo_apellido', '$cedula', '$correo', '$password')";
+        $sql = "INSERT INTO Profesores (primer_nombre, segundo_nombre, primer_apellido, segundo_apellido, cedula, correo, password, foto) 
+                VALUES ('$primer_nombre', '$segundo_nombre', '$primer_apellido', '$segundo_apellido', '$cedula', '$correo', '$password', '$ruta_imagen')";
 
         if ($conn->query($sql) === TRUE) {
             // Establecer un mensaje de éxito en la sesión
@@ -59,14 +72,11 @@ $conn->close();
 <html lang="es">
 
 <head>
-<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrar Profesor</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
-</head>
-
     <style>
         body {
             background-color: #f8f9fa;
@@ -87,7 +97,6 @@ $conn->close();
 
         .alert {
             margin-bottom: 20px;
-
         }
 
         .btn-primary {
@@ -110,7 +119,7 @@ $conn->close();
             <div class="alert alert-danger"><?php echo $error; ?></div>
         <?php endif; ?>
 
-        <form action="" method="POST">
+        <form action="" method="POST" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="primer_nombre">Primer Nombre:</label>
                 <input type="text" class="form-control" name="primer_nombre" required>
@@ -138,6 +147,10 @@ $conn->close();
             <div class="form-group">
                 <label for="password">Contraseña:</label>
                 <input type="password" class="form-control" name="password" required>
+            </div>
+            <div class="form-group">
+                <label for="foto">Foto:</label>
+                <input type="file" class="form-control-file" name="foto" accept="image/*" required>
             </div>
             <button type="submit" class="btn btn-primary btn-block">Registrar</button>
         </form>

@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['file']) && $_FILES['f
 
         // Preparar la consulta para verificar la existencia del estudiante
         $stmt_check = $conn->prepare("SELECT * FROM Estudiantes WHERE cedula = ?");
-        $stmt_insert = $conn->prepare("INSERT INTO Estudiantes (primer_nombre, segundo_nombre, primer_apellido, segundo_apellido, cedula) VALUES (?, ?, ?, ?, ?)");
+        $stmt_insert = $conn->prepare("INSERT INTO Estudiantes (primer_nombre, segundo_nombre, primer_apellido, segundo_apellido, cedula, correo) VALUES (?, ?, ?, ?, ?, ?)");
 
         // Recorrer las filas del Excel
         foreach ($worksheet->getRowIterator() as $row) {
@@ -51,12 +51,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['file']) && $_FILES['f
             }
 
             // Comprobar que hay suficientes celdas
-            if (count($cells) >= 5) {
+            if (count($cells) >= 6) {
                 $primer_nombre = $cells[0];
                 $segundo_nombre = $cells[1];
                 $primer_apellido = $cells[2];
                 $segundo_apellido = $cells[3];
                 $cedula = $cells[4];
+                $correo = $cells[5]; // Agregar esta línea
 
                 // Verificar si el estudiante ya está en la base de datos
                 $stmt_check->bind_param("s", $cedula);
@@ -65,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['file']) && $_FILES['f
 
                 if ($result->num_rows == 0) {
                     // Insertar estudiante si no existe
-                    $stmt_insert->bind_param("sssss", $primer_nombre, $segundo_nombre, $primer_apellido, $segundo_apellido, $cedula);
+                    $stmt_insert->bind_param("ssssss", $primer_nombre, $segundo_nombre, $primer_apellido, $segundo_apellido, $cedula, $correo); // Cambia a 6 parámetros
                     if ($stmt_insert->execute()) {
                         $contador++;
                     }
@@ -116,6 +117,33 @@ $conn->close();
     </style>
 </head>
 <body>
+<nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="index.php">Gestión de Notas</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.php">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="buscar.php">Buscar</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="lista_estudiantes.php">Estudiantes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="perfil.php">Perfil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="logout.php">Cerrar Sesión</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
     <div class="container">
         <h2>Subir Estudiantes</h2>
 
@@ -134,8 +162,10 @@ $conn->close();
                 <input type="file" class="form-control" name="file" accept=".xls,.xlsx" required>
             </div>
             <button type="submit" class="btn btn-primary">Subir</button>
-            <button onclick="history.back()" type="button" class="btn btn-secondary">Regresar</button>
         </form>
     </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

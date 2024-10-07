@@ -1,5 +1,7 @@
 {
     "require": {
-        "phpoffice/phpspreadsheet": "1.23"
+        "phpoffice/phpspreadsheet": "1.23",
+        "setasign/fpdf": "^1.8",
+        "tecnickcom/tcpdf": "^6.7"
     }
 }

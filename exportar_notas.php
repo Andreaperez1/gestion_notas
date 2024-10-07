@@ -38,7 +38,8 @@ $sheet->setCellValue('B1', 'Apellido Estudiante');
 $sheet->setCellValue('C1', 'Materia');
 $sheet->setCellValue('D1', 'Periodo');
 $sheet->setCellValue('E1', 'Nota');
-$sheet->setCellValue('F1', 'Promedio Final'); // Encabezado para el promedio
+$sheet->setCellValue('F1', 'Promedio Final');
+$sheet->setCellValue('G1', 'Estado'); // Nueva columna para el estado de aprobación
 
 // Consulta SQL según el rol del usuario
 if ($esProfesor) {
@@ -59,7 +60,7 @@ if ($esProfesor) {
         JOIN 
             materias m ON em.id_materia = m.id
         JOIN 
-            periodo p ON dn.id_periodo = p.id
+            periodos p ON dn.id_periodo = p.id
         WHERE 
             em.id_profesor = ?
         ORDER BY 
@@ -85,9 +86,9 @@ if ($esProfesor) {
         JOIN 
             materias m ON em.id_materia = m.id
         JOIN 
-            periodo p ON dn.id_periodo = p.id
+            periodos p ON dn.id_periodo = p.id
         WHERE 
-            e.id = ?"; // Filtra por el ID del estudiante
+            e.id = ?";
 
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $_SESSION['estudiante_id']);
@@ -106,8 +107,15 @@ $row = 2; // Empezar en la segunda fila
 while ($data = $result->fetch_assoc()) {
     // Si cambiamos de materia, calcula y escribe el promedio anterior
     if ($currentMateria !== $data['materia'] && $currentMateria !== "") {
+        // Calcular el promedio
+        $promedio = round($sumNotas / $countNotas, 2);
+        
         // Escribir el promedio en la siguiente fila
-        $sheet->setCellValue('F' . $row, round($sumNotas / $countNotas, 2)); // Escribir el promedio redondeado
+        $sheet->setCellValue('F' . $row, $promedio);
+
+        // Determinar si se aprobó o no (ajusta el umbral según sea necesario)
+        $estado = ($promedio >= 3.0) ? 'Aprobado' : 'Reprobado';
+        $sheet->setCellValue('G' . $row, $estado); // Estado de aprobación
         $row++; // Avanzar una fila para dejar un espacio
 
         // Reiniciar los acumuladores
@@ -132,11 +140,15 @@ while ($data = $result->fetch_assoc()) {
 
 // Escribir el último promedio si hay datos
 if ($countNotas > 0) {
-    $sheet->setCellValue('F' . $row, round($sumNotas / $countNotas, 2)); // Escribir el promedio redondeado
+    $promedio = round($sumNotas / $countNotas, 2);
+    $sheet->setCellValue('F' . $row, $promedio);
+    $estado = ($promedio >= 3.5) ? 'Aprobado' : 'Reprobado';
+    $sheet->setCellValue('G' . $row, $estado);
 }
 
 // Agregar una fila vacía al final para un mejor espaciado
 $row++;
+
 // Crear el archivo Excel
 try {
     $writer = new Xlsx($spreadsheet);
@@ -146,6 +158,11 @@ try {
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     header('Content-Disposition: attachment; filename="' . $filename . '"');
     header('Cache-Control: max-age=0');
+    header('Expires: 0');
+
+    // Limpiar el búfer de salida antes de generar el archivo
+    ob_clean();
+    flush();
 
     // Guardar el archivo en la salida
     $writer->save('php://output');
@@ -157,34 +174,3 @@ try {
 // Cerrar la conexión a la base de datos
 $conn->close();
 ?>
-
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exportar Notas</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-        h2 {
-            margin-bottom: 20px;
-        }
-        .container {
-            margin-top: 50px;
-        }
-        .alert {
-            margin-top: 20px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container mt-5">
-        <h2>Exportar Notas</h2>
-        <a href="gestionar_notas.php" class="btn btn-secondary mb-3">Regresar a Gestionar Notas</a>
-        <p>Las notas se están generando. Si la descarga no comienza automáticamente, por favor <a href="gestionar_notas.php">haga clic aquí</a>.</p>
-    </div>
-</body>
-</html>

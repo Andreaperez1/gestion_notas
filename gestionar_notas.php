@@ -24,7 +24,7 @@ $sql = "SELECT dn.id, em.id AS id_matriculados, e.primer_nombre, e.primer_apelli
         JOIN matriculadosmaterias em ON dn.id_matriculados = em.id
         JOIN Estudiantes e ON em.id_estudiante = e.id
         JOIN materias m ON em.id_materia = m.id
-        JOIN periodo p ON dn.id_periodo = p.id
+        JOIN periodos p ON dn.id_periodo = p.id  -- Cambié 'periodo' por 'periodos'
         WHERE em.id_profesor = ?
         ORDER BY e.primer_apellido, e.primer_nombre, m.nombre, p.nombre"; // Ordenar por apellido, nombre, materia, y periodo
 
@@ -73,10 +73,43 @@ $result = $stmt->get_result();
     </style>
 </head>
 <body>
+    <nav class="navbar navbar-expand">
+        <div class="container">
+            <a class="navbar-brand" href="index.php">Gestión de Notas</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.php">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="lista_estudiantes.php">Estudiantes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="perfil.php">Perfil</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Más opciones
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item" href="exportar_notas.php">Exportar a Excel</a>
+                            <a class="dropdown-item" href="exportar_pdf.php">Descargar PDF</a>
+                            <div class="dropdown-divider"></div>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="logout.php">Cerrar Sesión</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
         <h2>Gestionar Notas</h2>
-
-        <a href="dashboard.php" class="btn btn-secondary mb-3">Regresar al Menú</a>
 
         <table class="table table-striped">
             <thead>
@@ -105,7 +138,13 @@ $result = $stmt->get_result();
         </table>
 
         <a href="agregar_nota.php" class="btn btn-primary">Agregar Nueva Nota</a>
-    </div>
+        
+        <a href="dashboard.php" class="btn btn-secondary mb-3">Regresar al Menú</a>
+    </div> <!-- Agregar scripts de Bootstrap y jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 </body>
 </html>
 

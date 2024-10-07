@@ -29,7 +29,7 @@ $stmt_estudiantes->execute();
 $result_estudiantes = $stmt_estudiantes->get_result();
 
 // Obtener los periodos disponibles
-$sql_periodos = "SELECT id, nombre FROM periodo";
+$sql_periodos = "SELECT id, nombre FROM periodos"; // Cambiado 'periodo' a 'periodos'
 $result_periodos = $conn->query($sql_periodos);
 
 // Obtener las materias disponibles
@@ -40,21 +40,24 @@ $result_materias = $conn->query($sql_materias);
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $id_matriculados = $_POST['id_matriculados'];
     $id_periodo = $_POST['id_periodo'];
-    $id_materia = $_POST['id_materia'];
     $nota = $_POST['nota'];
     $fecha = date('Y-m-d');
 
     // Insertar la nueva nota en la base de datos
     $sql_insert = "INSERT INTO detalle_notas (id_matriculados, id_periodo, nota, fecha) VALUES (?, ?, ?, ?)";
     $stmt_insert = $conn->prepare($sql_insert);
+    if ($stmt_insert === false) {
+        die("Error preparing statement: " . $conn->error);
+    }
     $stmt_insert->bind_param("iids", $id_matriculados, $id_periodo, $nota, $fecha);
 
     if ($stmt_insert->execute()) {
         echo "<div class='alert alert-success'>Nota agregada exitosamente.</div>";
     } else {
-        echo "<div class='alert alert-danger'>Error al agregar la nota: " . $conn->error . "</div>";
+        echo "<div class='alert alert-danger'>Error al agregar la nota: " . $stmt_insert->error . "</div>";
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -108,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <option value="">Seleccionar estudiante</option>
                     <?php while ($row = $result_estudiantes->fetch_assoc()): ?>
                         <option value="<?php echo $row['id_matriculados']; ?>">
-                            <?php echo $row['primer_nombre'] . " " . $row['primer_apellido']; ?>
+                            <?php echo htmlspecialchars($row['primer_nombre'] . " " . $row['primer_apellido']); ?>
                         </option>
                     <?php endwhile; ?>
                 </select>
@@ -118,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <select class="form-control" name="id_periodo" required>
                     <option value="">Seleccionar periodo</option>
                     <?php while ($row = $result_periodos->fetch_assoc()): ?>
-                        <option value="<?php echo $row['id']; ?>"><?php echo $row['nombre']; ?></option>
+                        <option value="<?php echo $row['id']; ?>"><?php echo htmlspecialchars($row['nombre']); ?></option>
                     <?php endwhile; ?>
                 </select>
             </div>
@@ -127,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <select class="form-control" name="id_materia" required>
                     <option value="">Seleccionar materia</option>
                     <?php while ($row = $result_materias->fetch_assoc()): ?>
-                        <option value="<?php echo $row['id']; ?>"><?php echo $row['nombre']; ?></option>
+                        <option value="<?php echo $row['id']; ?>"><?php echo htmlspecialchars($row['nombre']); ?></option>
                     <?php endwhile; ?>
                 </select>
             </div>
