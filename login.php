@@ -139,9 +139,8 @@ $conn->close();
                     <option value="estudiante">Estudiante</option>
                 </select>
             </div>
-            
-            <a href="registrar.php" class="btn btn-danger">Registrarse</a>
             <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+            <a href="registrar.php" class="btn btn-danger">Registrarse</a>
         </form>
     </div>
 </body>

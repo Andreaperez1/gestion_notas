@@ -22,24 +22,32 @@ if ($conn->connect_error) {
 if (isset($_GET['id'])) {
     $id = $_GET['id'];
 
-    // Consultar la nota a editar
-    $sql = "SELECT dn.nota, em.id_estudiante, m.nombre AS materia, p.nombre AS periodo
-            FROM detalle_notas dn
-            JOIN matriculadosmaterias em ON dn.id_matriculados = em.id
-            JOIN materias m ON em.id_materia = m.id
-            JOIN periodo p ON dn.id_periodo = p.id
-            WHERE dn.id = ?";
+   // Modificar la consulta para editar
+$sql = "SELECT dn.nota, em.id_estudiante, m.nombre AS materia, p.nombre AS periodo
+FROM detalle_notas dn
+JOIN matriculadosmaterias em ON dn.id_matriculados = em.id
+JOIN materias m ON em.id_materia = m.id
+JOIN periodos p ON dn.id_periodo = p.id
+WHERE dn.id = ?";
 
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+// Prepara y ejecuta la consulta
+$stmt = $conn->prepare($sql);
 
-    if ($result->num_rows > 0) {
-        $notaData = $result->fetch_assoc();
-    } else {
-        die("Nota no encontrada.");
-    }
+// Verifica si la consulta se preparó correctamente
+if (!$stmt) {
+die("Error en la preparación de la consulta: " . $conn->error);
+}
+
+$stmt->bind_param("i", $id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows > 0) {
+$notaData = $result->fetch_assoc();
+} else {
+die("Nota no encontrada.");
+}
+
 } else {
     die("ID de nota no proporcionado.");
 }

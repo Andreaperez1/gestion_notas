@@ -24,7 +24,7 @@ $sql = "SELECT dn.id, em.id AS id_matriculados, e.primer_nombre, e.primer_apelli
         JOIN matriculadosmaterias em ON dn.id_matriculados = em.id
         JOIN Estudiantes e ON em.id_estudiante = e.id
         JOIN materias m ON em.id_materia = m.id
-        JOIN periodos p ON dn.id_periodo = p.id  -- Cambié 'periodo' por 'periodos'
+        JOIN periodos p ON dn.id_periodo = p.id  -- 
         WHERE em.id_profesor = ?
         ORDER BY e.primer_apellido, e.primer_nombre, m.nombre, p.nombre"; // Ordenar por apellido, nombre, materia, y periodo
 
